@@ -10,7 +10,7 @@
 #include <windows.h>
 #include <gdiplus.h>
 #include <stdio.h>
-
+#include <ShlObj.h>
 
 #define MAX_LOADSTRING 100
 
@@ -140,10 +140,11 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_LBUTTONDOWN:
     {
-        ShowWindow(hWnd, SW_MINIMIZE);
-        Sleep(3000);
+        ShowWindow(hWnd, SW_HIDE);
+        Sleep(1000);
         ScreenShotDesktop();
-        ShowWindow(hWnd, SW_NORMAL);
+        ShowWindow(hWnd, SW_SHOW);
+
     }
     case WM_COMMAND:
         {
@@ -232,11 +233,8 @@ PBITMAPINFO CreateBitmapInfoStruct(HBITMAP hBmp)
     PBITMAPINFO pbmi;
     WORD cClrBits;
 
-#ifdef _DEBUG
-    assert(GetObject(hBmp, sizeof(BITMAP), (LPSTR)bmp));
-#else
     GetObject(hBmp, sizeof(BITMAP), (LPSTR)&bmp);
-#endif
+
     cClrBits = (WORD)(bmp.bmPlanes * bmp.bmBitsPixel);
 
     if (cClrBits == 1)
@@ -299,15 +297,20 @@ void CreateBMPFile(LPCWSTR pszFile, HBITMAP hBMP)
     GetDIBits(hdc, hBMP, 0, (WORD)pbih->biHeight, lpBits, pbi, DIB_RGB_COLORS);
 #endif
 
-    wchar_t filepath[256];
+    /*wchar_t filepath[256];
     wcscpy_s(filepath, L"C:\\Users\\");
     DWORD len = 0;
     GetUserName(NULL, &len);
     wchar_t* username = new wchar_t[len];    
     GetUserName(username, &len);
     wcscat_s(filepath, username);
-    wcscat_s(filepath, L"\\Pictures\\");
-    wcscat_s(filepath, pszFile);    
+    
+    wcscat_s(filepath, pszFile);*/  
+
+    wchar_t filepath[256];
+    SHGetFolderPathW(NULL, CSIDL_MYPICTURES, NULL, SHGFP_TYPE_CURRENT, filepath);
+    wcscat_s(filepath, L"\\");
+    wcscat_s(filepath, pszFile);
 
     hf = CreateFile(filepath, GENERIC_READ | GENERIC_WRITE, (DWORD)0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
 
